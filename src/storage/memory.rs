@@ -47,11 +47,13 @@ impl Storage for MemoryStorage {
     }
 
     fn contains(&self, table: &str, key: &str) -> Result<bool, crate::error::KvError> {
-        todo!()
+        let table = self.get_table(table);
+        Ok(table.contains_key(key))
     }
 
     fn del(&self, table: &str, key: &str) -> Result<Option<crate::Value>, crate::error::KvError> {
-        todo!()
+        let table = self.get_table(table);
+        Ok(table.remove(key).map(|v| v.1.clone()))
     }
 
     fn get_iter(

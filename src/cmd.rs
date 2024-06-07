@@ -1,12 +1,13 @@
 mod hdelete;
+mod hexist;
 mod hget;
 mod hset;
+
 use prost::Message;
 
 use crate::{
-    error::KvError,
     pb::{command_request::RequestData, CommandRequest, CommandResponse, Kvpair, Value},
-    value, Hset, Storage,
+    value, Storage,
 };
 use anyhow::Result;
 use bytes::{Bytes, BytesMut};
@@ -21,21 +22,13 @@ pub fn dispatch(request: CommandRequest, store: &impl Storage) -> CommandRespons
         Some(RequestData::Hget(param)) => param.execute(store),
         Some(RequestData::Hset(param)) => param.execute(store),
         Some(RequestData::Hdel(param)) => param.execute(store),
+        Some(RequestData::Hexist(param)) => param.execute(store),
         Some(_) => todo!(),
         None => todo!(),
     }
 }
 
 impl CommandRequest {
-    pub fn new_hset(table: &str, key: &str, value: Value) -> Self {
-        Self {
-            request_data: Some(RequestData::Hset(Hset {
-                table: table.into(),
-                pair: Some(Kvpair::new(key, value)),
-            })),
-        }
-    }
-
     pub fn to_bytes(self) -> Result<Bytes> {
         let mut buf = BytesMut::new();
         self.encode(&mut buf)?;
@@ -61,6 +54,7 @@ impl Kvpair {
 }
 
 // From
+
 impl From<Value> for CommandResponse {
     fn from(v: Value) -> Self {
         Self {
@@ -98,6 +92,30 @@ impl From<&str> for Value {
     fn from(v: &str) -> Self {
         Self {
             value: Some(value::Value::String(v.to_string())),
+        }
+    }
+}
+
+impl From<bool> for Value {
+    fn from(v: bool) -> Self {
+        Self {
+            value: Some(value::Value::Bool(v)),
+        }
+    }
+}
+
+impl From<i64> for Value {
+    fn from(v: i64) -> Self {
+        Self {
+            value: Some(value::Value::Integer(v)),
+        }
+    }
+}
+
+impl From<f64> for Value {
+    fn from(v: f64) -> Self {
+        Self {
+            value: Some(value::Value::Float(v)),
         }
     }
 }

@@ -1,6 +1,9 @@
-use crate::pb::{CommandResponse, Hget};
+use crate::{
+    error::KvError,
+    pb::{CommandResponse, Hget},
+};
 
-use super::{CommandExecutor, KvError};
+use super::CommandExecutor;
 
 impl CommandExecutor for Hget {
     fn execute(self, store: &impl super::Storage) -> CommandResponse {
