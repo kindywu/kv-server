@@ -1,7 +1,6 @@
 use std::{net::SocketAddr, sync::Arc};
 
 use anyhow::Result;
-use dashmap::DashMap;
 use futures::{SinkExt, StreamExt};
 use kv_server::{dispatch, CommandRequest, MemoryStorage, Storage};
 use prost::Message;
@@ -15,22 +14,26 @@ async fn main() -> Result<()> {
     let addr = "0.0.0.0:8080"; // 连接服务器
     let listener = TcpListener::bind(addr).await?;
 
-    let storage = Arc::new(MemoryStorage::new(DashMap::new()));
+    info!("kv server listen on {addr}");
+
+    let storage = Arc::new(MemoryStorage::new());
 
     loop {
         let (stream, addr) = listener.accept().await?;
+        info!("kv server accept client {addr}");
+
         let storage = storage.clone();
         tokio::spawn(async move {
             match handle(stream, addr, storage).await {
-                Ok(_) => info!("{} quit", addr),
-                Err(e) => warn!("{} quit with error {:?}", addr, e),
+                Ok(_) => info!("client {} leave", addr),
+                Err(e) => warn!("client {} leave with error {:?}", addr, e),
             }
         });
     }
 }
 
 async fn handle(stream: TcpStream, addr: SocketAddr, storage: Arc<impl Storage>) -> Result<()> {
-    info!("handle request from {}", addr);
+    info!("kv server handle request from {}", addr);
     let mut framed = Framed::new(stream, LengthDelimitedCodec::new());
     loop {
         match framed.next().await {

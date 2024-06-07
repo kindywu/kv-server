@@ -1,4 +1,5 @@
 use http::StatusCode;
+use redb::{CommitError, StorageError, TableError, TransactionError};
 use thiserror::Error;
 
 use crate::CommandResponse;
@@ -10,6 +11,18 @@ pub enum KvError {
 
     #[error("invalid command: {0}")]
     InvalidCommand(String),
+
+    #[error("redb transaction error")]
+    TransactionError(#[from] TransactionError),
+
+    #[error("redb table error")]
+    TableError(#[from] TableError),
+
+    #[error("redb storage error")]
+    StorageError(#[from] StorageError),
+
+    #[error("redb commit error")]
+    CommitError(#[from] CommitError),
 
     #[error("Internal error: {0}")]
     Internal(String),

@@ -1,31 +1,38 @@
 use std::ops::Deref;
 
 use crate::{Storage, Value};
-use dashmap::DashMap;
+use dashmap::{mapref::one::Ref, DashMap};
 
+// #[derive(Debug, Default)]
+#[derive(Debug, Default)]
 pub struct MemoryStorage {
-    inner_storage: DashMap<String, DashMap<String, Value>>,
+    tables: DashMap<String, DashMap<String, Value>>,
 }
 
 impl Deref for MemoryStorage {
     type Target = DashMap<String, DashMap<String, Value>>;
 
     fn deref(&self) -> &Self::Target {
-        &self.inner_storage
+        &self.tables
     }
 }
 
 impl MemoryStorage {
-    pub fn new(inner_storage: DashMap<String, DashMap<String, Value>>) -> Self {
-        Self { inner_storage }
+    // pub fn new(inner_storage: DashMap<String, DashMap<String, Value>>) -> Self {
+    //     Self { inner_storage }
+    // }
+
+    pub fn new() -> Self {
+        Self {
+            tables: Default::default(),
+        }
     }
 
-    fn get_table(
-        &self,
-        table: &str,
-    ) -> dashmap::mapref::one::RefMut<String, DashMap<String, Value>, std::hash::RandomState> {
-        let table = self.entry(table.into()).or_default();
-        table
+    fn get_table(&self, table: &str) -> Ref<String, DashMap<String, Value>> {
+        match self.tables.get(table) {
+            Some(table) => table,
+            None => self.entry(table.into()).or_default().downgrade(),
+        }
     }
 }
 
