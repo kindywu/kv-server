@@ -1,8 +1,11 @@
 mod memory;
+mod redb;
 
 pub use memory::*;
+pub use redb::*;
 
 use crate::{error::KvError, Kvpair, Value};
+use anyhow::Result;
 
 /// 对存储的抽象，我们不关心数据存在哪儿，但需要定义外界如何和存储打交道
 pub trait Storage {

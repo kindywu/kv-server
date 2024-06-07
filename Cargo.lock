@@ -291,6 +291,8 @@ dependencies = [
  "lazy_static",
  "prost",
  "prost-build",
+ "redb",
+ "tempfile",
  "thiserror",
  "tokio",
  "tokio-stream",
@@ -530,6 +532,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0fa76aaf39101c457836aec0ce2316dbdc3ab723cdda1c6bd4e6ad4208acaca7"
 dependencies = [
  "proc-macro2",
+]
+
+[[package]]
+name = "redb"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ed7508e692a49b6b2290b56540384ccae9b1fb4d77065640b165835b56ffe3bb"
+dependencies = [
+ "libc",
 ]
 
 [[package]]

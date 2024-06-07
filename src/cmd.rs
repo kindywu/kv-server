@@ -44,6 +44,14 @@ impl CommandResponse {
     }
 }
 
+impl Value {
+    pub fn to_bytes(&self) -> Result<Bytes> {
+        let mut buf = BytesMut::new();
+        self.encode(&mut buf)?;
+        Ok(buf.into())
+    }
+}
+
 impl Kvpair {
     pub fn new(key: impl Into<String>, value: Value) -> Self {
         Self {
