@@ -29,7 +29,7 @@ pub fn dispatch(request: CommandRequest, storage: &dyn Storage) -> CommandRespon
 }
 
 impl CommandRequest {
-    pub fn to_bytes(self) -> Result<Bytes> {
+    pub fn to_bytes(&self) -> Result<Bytes> {
         let mut buf = BytesMut::new();
         self.encode(&mut buf)?;
         Ok(buf.into())
@@ -37,7 +37,7 @@ impl CommandRequest {
 }
 
 impl CommandResponse {
-    pub fn to_bytes(self) -> Result<Bytes> {
+    pub fn to_bytes(&self) -> Result<Bytes> {
         let mut buf = BytesMut::new();
         self.encode(&mut buf)?;
         Ok(buf.into())
