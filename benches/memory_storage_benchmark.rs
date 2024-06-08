@@ -1,6 +1,6 @@
 use anyhow::Result;
 use criterion::{criterion_group, criterion_main, Criterion};
-use kv_server::{RedbStorage, Storage};
+use kv_server::{MemoryStorage, Storage};
 
 fn memory_storage_test(storage: &impl Storage) -> Result<()> {
     storage.set("table", "key".to_string(), "value".into())?;
@@ -11,8 +11,7 @@ fn memory_storage_test(storage: &impl Storage) -> Result<()> {
 }
 
 fn memory_storage_benchmark(c: &mut Criterion) {
-    let file = tempfile::NamedTempFile::new().unwrap();
-    let storage = RedbStorage::try_new(file.path()).unwrap();
+    let storage = MemoryStorage::new();
 
     c.bench_function("memory storage", |b| {
         b.iter(|| memory_storage_test(&storage))
