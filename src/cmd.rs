@@ -1,4 +1,4 @@
-mod hdelete;
+mod hdel;
 mod hexist;
 mod hget;
 mod hset;
