@@ -14,15 +14,15 @@ use bytes::{Bytes, BytesMut};
 use http::StatusCode;
 
 pub trait CommandExecutor {
-    fn execute(self, store: &impl Storage) -> CommandResponse;
+    fn execute(self, storage: &dyn Storage) -> CommandResponse;
 }
 
-pub fn dispatch(request: CommandRequest, store: &impl Storage) -> CommandResponse {
+pub fn dispatch(request: CommandRequest, storage: &dyn Storage) -> CommandResponse {
     match request.request_data {
-        Some(RequestData::Hget(param)) => param.execute(store),
-        Some(RequestData::Hset(param)) => param.execute(store),
-        Some(RequestData::Hdel(param)) => param.execute(store),
-        Some(RequestData::Hexist(param)) => param.execute(store),
+        Some(RequestData::Hget(param)) => param.execute(storage),
+        Some(RequestData::Hset(param)) => param.execute(storage),
+        Some(RequestData::Hdel(param)) => param.execute(storage),
+        Some(RequestData::Hexist(param)) => param.execute(storage),
         Some(_) => todo!(),
         None => todo!(),
     }

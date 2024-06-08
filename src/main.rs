@@ -1,8 +1,9 @@
-use std::{net::SocketAddr, sync::Arc};
+use std::{env, net::SocketAddr, path::Path, sync::Arc};
 
 use anyhow::Result;
+use dotenv::dotenv;
 use futures::{SinkExt, StreamExt};
-use kv_server::{dispatch, CommandRequest, MemoryStorage, Storage};
+use kv_server::{dispatch, CommandRequest, MemoryStorage, RedbStorage, Storage};
 use prost::Message;
 use tokio::net::{TcpListener, TcpStream};
 use tokio_util::codec::{Framed, LengthDelimitedCodec};
@@ -11,12 +12,23 @@ use tracing::{info, warn};
 #[tokio::main]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt::init();
-    let addr = "0.0.0.0:8080"; // 连接服务器
-    let listener = TcpListener::bind(addr).await?;
+    dotenv().ok();
 
-    info!("kv server listen on {addr}");
+    let listen_addr = env::var("LISTEN_ADDR")?;
+    let storage_type = env::var("STORAGE_TYPE")?;
 
-    let storage = Arc::new(MemoryStorage::new());
+    info!("kv server listen on {listen_addr}");
+    let listener = TcpListener::bind(listen_addr).await?;
+
+    let storage: Arc<dyn Storage> = match storage_type.as_str() {
+        "memory" => Arc::new(MemoryStorage::new()),
+        "redb" => {
+            let file = env::var("STORAGE_REDB_FILE")?;
+            let file = Path::new(&file);
+            Arc::new(RedbStorage::try_new(file)?)
+        }
+        _ => panic!(""),
+    };
 
     loop {
         let (stream, addr) = listener.accept().await?;
@@ -32,14 +44,15 @@ async fn main() -> Result<()> {
     }
 }
 
-async fn handle(stream: TcpStream, addr: SocketAddr, storage: Arc<impl Storage>) -> Result<()> {
+async fn handle(stream: TcpStream, addr: SocketAddr, storage: Arc<dyn Storage>) -> Result<()> {
     info!("kv server handle request from {}", addr);
     let mut framed = Framed::new(stream, LengthDelimitedCodec::new());
+    let storage = storage.as_ref();
     loop {
         match framed.next().await {
             Some(Ok(buf)) => {
                 let request = CommandRequest::decode(buf)?;
-                let response = dispatch(request, storage.as_ref());
+                let response = dispatch(request, storage);
 
                 let buf = response.to_bytes()?;
 

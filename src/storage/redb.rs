@@ -43,11 +43,24 @@ impl Storage for RedbStorage {
     }
 
     fn contains(&self, table: &str, key: &str) -> Result<bool, KvError> {
-        todo!()
+        let table: TableDefinition<&str, Value> = TableDefinition::new(table);
+
+        let read_txn = self.db.begin_read()?;
+        let table = read_txn.open_table(table)?;
+        Ok(table.get(key)?.is_some())
     }
 
     fn del(&self, table: &str, key: &str) -> Result<Option<Value>, KvError> {
-        todo!()
+        let table: TableDefinition<&str, Value> = TableDefinition::new(table);
+
+        let mut result = None;
+        let write_txn = self.db.begin_write()?;
+        {
+            let mut table = write_txn.open_table(table)?;
+            result = table.remove(key)?.map(|v| v.value());
+        }
+        write_txn.commit()?;
+        Ok(result)
     }
 
     fn get_iter(&self, table: &str) -> Result<Box<dyn Iterator<Item = Kvpair>>, KvError> {
