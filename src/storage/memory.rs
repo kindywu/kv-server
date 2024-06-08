@@ -70,3 +70,19 @@ impl Storage for MemoryStorage {
         todo!()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    // use test::Bencher;
+
+    #[test]
+    fn get_or_create_table_should_work() -> anyhow::Result<()> {
+        let storage = MemoryStorage::new();
+        storage.set("table", "key".to_string(), "value".into())?;
+        let value = storage.get("table", "key")?;
+        assert!(value.is_some());
+        assert_eq!(value.unwrap(), "value".into());
+        Ok(())
+    }
+}
