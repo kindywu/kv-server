@@ -27,7 +27,7 @@ async fn main() -> Result<()> {
             let file = Path::new(&file);
             Arc::new(RedbStorage::try_new(file)?)
         }
-        _ => panic!(""),
+        _ => unimplemented!("storage type: {}", storage_type),
     };
 
     loop {
