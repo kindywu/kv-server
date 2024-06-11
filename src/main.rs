@@ -3,7 +3,7 @@ use std::{env, net::SocketAddr, path::Path, sync::Arc};
 use anyhow::Result;
 use dotenv::dotenv;
 use futures::{SinkExt, StreamExt};
-use kv_server::{dispatch, CommandRequest, MemoryStorage, RedbStorage, Storage};
+use kv_server::{dispatch, CommandRequest, MemoryStorage, RedbStorage, StorageState};
 use prost::Message;
 use tokio::net::{TcpListener, TcpStream};
 use tokio_util::codec::{Framed, LengthDelimitedCodec};
@@ -20,15 +20,26 @@ async fn main() -> Result<()> {
     info!("kv server listen on {listen_addr}");
     let listener = TcpListener::bind(listen_addr).await?;
 
-    let storage: Arc<dyn Storage> = match storage_type.as_str() {
-        "memory" => Arc::new(MemoryStorage::new()),
+    // let storage: Arc<dyn Storage> = match storage_type.as_str() {
+    //     "memory" => Arc::new(MemoryStorage::new()),
+    //     "redb" => {
+    //         let file = env::var("STORAGE_REDB_FILE")?;
+    //         let file = Path::new(&file);
+    //         Arc::new(RedbStorage::try_new(file)?)
+    //     }
+    //     _ => unimplemented!("storage type: {}", storage_type),
+    // };
+
+    let storage = match storage_type.as_str() {
+        "memory" => StorageState::MemoryStorage(MemoryStorage::new()),
         "redb" => {
             let file = env::var("STORAGE_REDB_FILE")?;
             let file = Path::new(&file);
-            Arc::new(RedbStorage::try_new(file)?)
+            StorageState::RedbStorage(RedbStorage::try_new(file)?)
         }
         _ => unimplemented!("storage type: {}", storage_type),
     };
+    let storage = Arc::new(storage);
 
     loop {
         let (stream, addr) = listener.accept().await?;
@@ -44,7 +55,8 @@ async fn main() -> Result<()> {
     }
 }
 
-async fn handle(stream: TcpStream, addr: SocketAddr, storage: Arc<dyn Storage>) -> Result<()> {
+// async fn handle(stream: TcpStream, addr: SocketAddr, storage: Arc<dyn Storage>) -> Result<()> {
+async fn handle(stream: TcpStream, addr: SocketAddr, storage: Arc<StorageState>) -> Result<()> {
     info!("kv server handle request from {}", addr);
     let mut framed = Framed::new(stream, LengthDelimitedCodec::new());
     let storage = storage.as_ref();
