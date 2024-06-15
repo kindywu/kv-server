@@ -18,6 +18,7 @@ harness = false
 [dependencies]
 anyhow = "1.0.86"
 bytes = "1.6.0"
+certify = "0.5.2"
 dashmap = "5.5.3"
 dotenv = "0.15.0"
 enum_dispatch = "0.3.13"
@@ -29,6 +30,7 @@ redb = "2.1.0"
 serde = { version = "1.0.203", features = ["derive"] }
 thiserror = "1.0.61"
 tokio = { version = "1.38.0", features = ["full"] }
+tokio-rustls = "0.26.0"
 tokio-stream = { version = "0.1.15", features = ["sync"] }
 tokio-util = { version = "0.7.11", features = ["codec"] }
 tracing = "0.1.40"

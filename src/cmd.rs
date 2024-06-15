@@ -75,10 +75,7 @@ impl From<Value> for CommandResponse {
 
 impl From<Option<Value>> for CommandResponse {
     fn from(v: Option<Value>) -> Self {
-        let v = match v {
-            Some(v) => v,
-            None => Value::default(),
-        };
+        let v = v.unwrap_or_default();
 
         Self {
             status: StatusCode::OK.as_u16() as _,
