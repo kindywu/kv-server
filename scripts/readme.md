@@ -1,0 +1,1 @@
+./generate-certificate.sh .
